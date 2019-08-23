@@ -1,29 +1,35 @@
-﻿// OGL_SDL.cpp : Defines the entry point for the application.
-//
-#include "SDL.h" 
+﻿#include <SDL.h>
+#include <GL/glew.h>
+#include <iostream>
 
-int main(int argc, char* argv[])
+int main(int argc, char* args[])
 {
-	SDL_Init(SDL_INIT_VIDEO);
+	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+	{
+		return 0;
+	}
 
 	SDL_Window* window = SDL_CreateWindow(
-		"SDL2Test",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		640,
-		480,
-		0
+		"My Game",
+		SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED,
+		512,
+		512,
+		SDL_WINDOW_OPENGL
 	);
 
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
+	SDL_GL_SetAttribute
+	(
+		SDL_GL_CONTEXT_PROFILE_MASK,
+		SDL_GL_CONTEXT_PROFILE_CORE
+	);
 
-	SDL_Delay(3000);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+	SDL_GL_CreateContext(window);
 
-	return 0;
+	glewExperimental = GL_TRUE;
+	glewInit();
+
 }
