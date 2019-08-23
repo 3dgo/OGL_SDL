@@ -10,13 +10,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
-      "variables": [
-        {
-          "name": "VCPKG_TARGET_TRIPLET",
-          "value": "x64-windows",
-          "type": "STRING"
-        }
-      ],
+      "variables": [],
       "cmakeToolchain": "D:/Libs/vcpkg/scripts/buildsystems/vcpkg.cmake"
     }
   ]
