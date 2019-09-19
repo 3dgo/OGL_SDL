@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 3.8)
 
 project(OGL_SDL)
 set(OpenGL_GL_PREFERENCE GLVND)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
