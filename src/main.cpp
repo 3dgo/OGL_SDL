@@ -86,13 +86,14 @@ int main(int argc, char *argv[])
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 	
 	std::ifstream t_vert("src/shaders/vert.glsl");
-	std::stringstream buffer;
-	buffer << t_vert.rdbuf();
-	std::string vert_shader_code = buffer.str();
+	std::stringstream buffer_vert;
+	buffer_vert << t_vert.rdbuf();
+	std::string vert_shader_code = buffer_vert.str();
 
 	std::ifstream t_frag("src/shaders/frag.glsl");
-	buffer << t_frag.rdbuf();
-	std::string frag_shader_code = buffer.str();
+	std::stringstream buffer_frag;
+	buffer_frag << t_frag.rdbuf();
+	std::string frag_shader_code = buffer_frag.str();
 	
 	std::array<const char*, 1> vert_shader_code_array{vert_shader_code.c_str()};
 	std::array<GLint, 1> vert_shader_code_size{(GLint)vert_shader_code.length()};
@@ -110,6 +111,9 @@ int main(int argc, char *argv[])
 	
 	glAttachShader(program, vert_shader);
 	glAttachShader(program, frag_shader);
+
+	glBindAttribLocation(program, 0, "in_Pos");
+	glBindAttribLocation(program, 1, "in_Color");
 
 	glLinkProgram(program);
 
@@ -145,6 +149,15 @@ int main(int argc, char *argv[])
 
 		SDL_GL_SwapWindow(window);
 	}
+
+	glUseProgram(0);
+	glDetachShader(program, vert_shader);
+	glDetachShader(program, frag_shader);
+
+	glDeleteProgram(program);
+
+	glDeleteShader(vert_shader);
+	glDeleteShader(frag_shader);
 
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);

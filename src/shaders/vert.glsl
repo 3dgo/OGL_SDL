@@ -1,6 +1,6 @@
 #version 330 core
-layout (position = 0) in vec3 in_Pos;
-layout (position = 1) in vec4 in_Color;
+layout (location = 0) in vec3 in_Pos;
+layout (location = 1) in vec4 in_Color;
 out vec4 ex_Color;
 
 void main()
