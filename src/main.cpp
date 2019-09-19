@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	}
 
 	bool loop = true;
-
+	
 	while (loop)
 	{
 		SDL_Event event;
