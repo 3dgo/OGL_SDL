@@ -8,17 +8,62 @@
 #include <SDL.h>
 #include <GL/glew.h>
 
-std::array<std::array<GLfloat, 3>, 3> vertices{
+std::array<std::array<GLfloat, 3>, 4> vertices{
+     0.5f,  0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
     -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f,  0.5f, 0.0f
+    -0.5f,  0.5f, 0.0f 
 };
 
-std::array<std::array<GLfloat, 4>, 3> colors{
+std::array<GLint, 6> indices = {  // note that we start from 0!
+    0, 1, 3,   // first triangle
+    1, 2, 3    // second triangle
+}; 
+
+std::array<std::array<GLfloat, 4>, 4> colors{
     1.0f, 0.0f, 0.0f, 1.0f,
     0.0f, 1.0f, 0.0f, 1.0f,
     0.0f, 0.0f, 1.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f
 };
+
+std::optional<std::string> get_shader_compile_error(GLuint shader)
+{
+	GLint success;
+	
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	
+	if(success)
+		return {};
+	
+	GLint log_length;
+	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+	char* shader_log = new char[log_length];
+	glGetShaderInfoLog(shader, log_length, &log_length, shader_log);
+
+	std::string shader_log_str(shader_log);
+	delete[] shader_log;
+	return shader_log_str;
+}
+
+std::optional<std::string> get_shader_link_error(GLuint program)
+{
+	GLint success;
+
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+	if(success)
+		return {};
+		
+	GLint log_length;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+	char* shader_log = new char[log_length];
+	glGetProgramInfoLog(program, log_length, &log_length, shader_log);
+
+	std::string shader_log_str(shader_log);
+	delete[] shader_log;
+	return shader_log_str;
+}
 
 int main(int argc, char *argv[])
 {
@@ -61,26 +106,33 @@ int main(int argc, char *argv[])
 	}
 
 	std::array<GLuint, 2> vbo;
+	std::array<GLuint, 1> ebo;
 	std::array<GLuint, 1> vao;
 	const GLuint POS_BUFFER_INDEX = 0;
 	const GLuint COLOR_BUFFER_INDEX = 1;
 
 	// Buffers
 	glGenBuffers(2, vbo.data());
+	glGenBuffers(1, ebo.data());
 	glGenVertexArrays(1, vao.data());
 
 	glBindVertexArray(vao[0]);
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo[0]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glVertexAttribPointer(POS_BUFFER_INDEX, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(POS_BUFFER_INDEX, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(POS_BUFFER_INDEX);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glVertexAttribPointer(COLOR_BUFFER_INDEX, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(COLOR_BUFFER_INDEX, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(COLOR_BUFFER_INDEX);
 	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	// Shaders
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -103,9 +155,20 @@ int main(int argc, char *argv[])
 
 	glShaderSource(vert_shader, 1, vert_shader_code_array.data(), vert_shader_code_size.data());
 	glCompileShader(vert_shader);
+	auto vert_error = get_shader_compile_error(vert_shader);
+	if(vert_error)
+	{
+		BLIMP_ERROR("Vertex shader failed to compile! Error:{}", vert_error.value());
+	}
 
 	glShaderSource(frag_shader, 1, frag_shader_code_array.data(), frag_shader_code_size.data());
 	glCompileShader(frag_shader);
+	auto frag_error = get_shader_compile_error(frag_shader);
+	if(frag_error)
+	{
+		BLIMP_ERROR("Fragment shader failed to compile! Error:{}", frag_error.value());
+	}
+
 
 	GLuint program = glCreateProgram();
 	
@@ -116,6 +179,14 @@ int main(int argc, char *argv[])
 	glBindAttribLocation(program, 1, "in_Color");
 
 	glLinkProgram(program);
+	auto link_error = get_shader_link_error(program);
+	if(link_error)
+	{
+		BLIMP_ERROR("Shader failed to link! Error:{}", link_error.value());
+	}
+
+	glDeleteShader(vert_shader);
+	glDeleteShader(frag_shader);
 
 	glUseProgram(program);
 
@@ -145,7 +216,9 @@ int main(int argc, char *argv[])
 		glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(vao[0]);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 
 		SDL_GL_SwapWindow(window);
 	}
@@ -155,9 +228,6 @@ int main(int argc, char *argv[])
 	glDetachShader(program, frag_shader);
 
 	glDeleteProgram(program);
-
-	glDeleteShader(vert_shader);
-	glDeleteShader(frag_shader);
 
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);
