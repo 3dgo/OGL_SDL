@@ -6,25 +6,19 @@
 #include "systems/log.h"
 
 #include <SDL.h>
+#include <SDL2/SDL_image.h>
 #include <GL/glew.h>
 
-std::array<std::array<GLfloat, 3>, 4> vertices{
-     0.5f,  0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-    -0.5f,  0.5f, 0.0f 
+std::array<std::array<GLfloat, 9>, 4> vertices{
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f,
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f,
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f,
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f
 };
 
 std::array<GLint, 6> indices = {  // note that we start from 0!
     0, 1, 3,   // first triangle
     1, 2, 3    // second triangle
-}; 
-
-std::array<std::array<GLfloat, 4>, 4> colors{
-    1.0f, 0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 0.0f, 1.0f
 };
 
 std::optional<std::string> get_shader_compile_error(GLuint shader)
@@ -53,8 +47,10 @@ std::optional<std::string> get_shader_link_error(GLuint program)
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 
 	if(success)
+	{
 		return {};
-		
+	}
+	
 	GLint log_length;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
 	char* shader_log = new char[log_length];
@@ -105,14 +101,15 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	std::array<GLuint, 2> vbo;
+	std::array<GLuint, 1> vbo;
 	std::array<GLuint, 1> ebo;
 	std::array<GLuint, 1> vao;
 	const GLuint POS_BUFFER_INDEX = 0;
 	const GLuint COLOR_BUFFER_INDEX = 1;
+	const GLuint TEXCOORD_BUFFER_INDEX = 2;
 
 	// Buffers
-	glGenBuffers(2, vbo.data());
+	glGenBuffers(1, vbo.data());
 	glGenBuffers(1, ebo.data());
 	glGenVertexArrays(1, vao.data());
 
@@ -123,29 +120,34 @@ int main(int argc, char *argv[])
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
-	glVertexAttribPointer(POS_BUFFER_INDEX, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(POS_BUFFER_INDEX, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(POS_BUFFER_INDEX);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors.data(), GL_STATIC_DRAW);
-	glVertexAttribPointer(COLOR_BUFFER_INDEX, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(COLOR_BUFFER_INDEX, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(COLOR_BUFFER_INDEX);
-	
+
+	glVertexAttribPointer(TEXCOORD_BUFFER_INDEX, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void*)(7 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(TEXCOORD_BUFFER_INDEX);
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Shaders
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 	
-	std::ifstream t_vert("src/shaders/vert.glsl");
+	std::ifstream t_vert;
+	t_vert.open("src/shaders/vert.glsl");
 	std::stringstream buffer_vert;
 	buffer_vert << t_vert.rdbuf();
 	std::string vert_shader_code = buffer_vert.str();
+	t_vert.close();
 
-	std::ifstream t_frag("src/shaders/frag.glsl");
+	std::ifstream t_frag;
+	t_frag.open("src/shaders/frag.glsl");
 	std::stringstream buffer_frag;
 	buffer_frag << t_frag.rdbuf();
 	std::string frag_shader_code = buffer_frag.str();
+	t_frag.close();
 	
 	std::array<const char*, 1> vert_shader_code_array{vert_shader_code.c_str()};
 	std::array<GLint, 1> vert_shader_code_size{(GLint)vert_shader_code.length()};
@@ -159,6 +161,7 @@ int main(int argc, char *argv[])
 	if(vert_error)
 	{
 		BLIMP_ERROR("Vertex shader failed to compile! Error:{}", vert_error.value());
+		return EXIT_FAILURE;
 	}
 
 	glShaderSource(frag_shader, 1, frag_shader_code_array.data(), frag_shader_code_size.data());
@@ -167,31 +170,51 @@ int main(int argc, char *argv[])
 	if(frag_error)
 	{
 		BLIMP_ERROR("Fragment shader failed to compile! Error:{}", frag_error.value());
+		return EXIT_FAILURE;
 	}
 
-
 	GLuint program = glCreateProgram();
-	
+
 	glAttachShader(program, vert_shader);
 	glAttachShader(program, frag_shader);
 
 	glBindAttribLocation(program, 0, "in_Pos");
 	glBindAttribLocation(program, 1, "in_Color");
+	glBindAttribLocation(program, 2, "in_TexCoord");
 
 	glLinkProgram(program);
 	auto link_error = get_shader_link_error(program);
 	if(link_error)
 	{
 		BLIMP_ERROR("Shader failed to link! Error:{}", link_error.value());
+		return EXIT_FAILURE;
 	}
 
+
 	glDeleteShader(vert_shader);
-	glDeleteShader(frag_shader);
+	glDeleteShader(frag_shader);	
 
 	glUseProgram(program);
 
-	bool loop = true;
+	// Textures
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	SDL_Surface* tex_suf = IMG_Load("resources/Stonewall15_512x512.bmp");
+
+	std::array<GLuint, 1> textures;
+	glGenTextures(1, textures.data());
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_suf->w, tex_suf->h, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_suf->pixels);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	
+	SDL_FreeSurface(tex_suf);
+
+	//main loop
+	bool loop = true;
+
 	while (loop)
 	{
 		SDL_Event event;
@@ -215,9 +238,23 @@ int main(int argc, char *argv[])
 
 		glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
+
+		glUseProgram(program);
+		GLfloat time_sec = SDL_GetTicks() / 1000.0;
+		GLint tint_color_location = glGetUniformLocation(program, "tintColor");
+		if(tint_color_location == -1)
+		{
+			BLIMP_ERROR("Could not find uniform attribute: {}!", "tintColor");
+			return EXIT_FAILURE;
+		}
+		GLfloat b = sin(time_sec) / 2.0f + 0.5f;
+		glUniform4f(tint_color_location, b, b, b, 1.0);
+
 		glBindVertexArray(vao[0]);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textures[0]);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
 		glBindVertexArray(0);
 
 		SDL_GL_SwapWindow(window);

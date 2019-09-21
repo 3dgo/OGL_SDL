@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2-Image CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
@@ -16,6 +17,7 @@ find_package(spdlog CONFIG REQUIRED)
 add_executable(OGL_SDL src/main.cpp src/core/common_include.h src/core/singleton.h src/systems/system.h src/systems/log.h)
 target_link_libraries(OGL_SDL PRIVATE ${OPENGL_LIBRARY})
 target_link_libraries(OGL_SDL PRIVATE SDL2::SDL2 SDL2::SDL2main)
+target_link_libraries(OGL_SDL PRIVATE SDL2::SDL2_image)
 target_link_libraries(OGL_SDL PRIVATE GLEW::GLEW)
 target_link_libraries(OGL_SDL PRIVATE spdlog::spdlog)
 # TODO: Add tests and install targets if needed.
