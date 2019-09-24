@@ -9,6 +9,10 @@
 #include <SDL2/SDL_image.h>
 #include <GL/glew.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 std::array<std::array<GLfloat, 9>, 4> vertices{
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f,
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f,
@@ -108,7 +112,7 @@ int main(int argc, char *argv[])
 	const GLuint COLOR_BUFFER_INDEX = 1;
 	const GLuint TEXCOORD_BUFFER_INDEX = 2;
 
-	// Buffers
+	// Buffers===============================================
 	glGenBuffers(1, vbo.data());
 	glGenBuffers(1, ebo.data());
 	glGenVertexArrays(1, vao.data());
@@ -131,7 +135,7 @@ int main(int argc, char *argv[])
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	// Shaders
+	// Shaders================================================
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 	
@@ -196,7 +200,7 @@ int main(int argc, char *argv[])
 
 	glUseProgram(program);
 
-	// Textures
+	// Textures==============================================
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -212,7 +216,7 @@ int main(int argc, char *argv[])
 	
 	SDL_FreeSurface(tex_suf);
 
-	//main loop
+	//main loop=========================================
 	bool loop = true;
 
 	while (loop)
@@ -249,6 +253,19 @@ int main(int argc, char *argv[])
 		}
 		GLfloat b = sin(time_sec) / 2.0f + 0.5f;
 		glUniform4f(tint_color_location, b, b, b, 1.0);
+
+		//Transformation
+		glm::mat4 transform{glm::mat4(1.0)};
+		transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
+		transform = glm::rotate(transform, glm::radians(90.0f * time_sec), glm::vec3(0, 0, 1.0));
+		transform = glm::translate(transform, glm::vec3(1, 0, 0));
+		GLint transform_location = glGetUniformLocation(program, "transform");
+		if(tint_color_location == -1)
+		{
+			BLIMP_ERROR("Could not find uniform attribute: {}!", "transform");
+			return EXIT_FAILURE;
+		}
+		glUniformMatrix4fv(transform_location, 1, GL_FALSE, glm::value_ptr(transform[0]));
 
 		glBindVertexArray(vao[0]);
 		glActiveTexture(GL_TEXTURE0);

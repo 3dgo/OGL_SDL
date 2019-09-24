@@ -7,10 +7,11 @@ out vec4 ex_Color;
 out vec2 ex_TexCoord;
 
 uniform vec4 tintColor;
+uniform mat4 transform;
 
 void main()
 {
-    gl_Position = vec4(in_Pos.x, in_Pos.y, in_Pos.z, 1.0);
+    gl_Position = transform * vec4(in_Pos.x, in_Pos.y, in_Pos.z, 1.0);
     ex_Color = in_Color * tintColor;
     ex_TexCoord = in_TexCoord;
 }
