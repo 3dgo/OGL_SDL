@@ -13,11 +13,61 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-std::array<std::array<GLfloat, 9>, 4> vertices{
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f,
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f,
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f,
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f
+std::array<std::array<GLfloat, 9>, 36> vertices{
+    -0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0, 1.0, 1.0, 1.0,  0.0f, 1.0f
+};
+
+std::array<glm::vec3, 10> cube_positions = {
+  glm::vec3( 0.0f,  0.0f,  0.0f), 
+  glm::vec3( 2.0f,  5.0f, -15.0f), 
+  glm::vec3(-1.5f, -2.2f, -2.5f),  
+  glm::vec3(-3.8f, -2.0f, -12.3f),  
+  glm::vec3( 2.4f, -0.4f, -3.5f),  
+  glm::vec3(-1.7f,  3.0f, -7.5f),  
+  glm::vec3( 1.3f, -2.0f, -2.5f),  
+  glm::vec3( 1.5f,  2.0f, -2.5f), 
+  glm::vec3( 1.5f,  0.2f, -1.5f), 
+  glm::vec3(-1.3f,  1.0f, -1.5f)  
 };
 
 std::array<GLint, 6> indices = {  // note that we start from 0!
@@ -112,6 +162,8 @@ int main(int argc, char *argv[])
 	const GLuint COLOR_BUFFER_INDEX = 1;
 	const GLuint TEXCOORD_BUFFER_INDEX = 2;
 
+	glEnable(GL_DEPTH_TEST);
+
 	// Buffers===============================================
 	glGenBuffers(1, vbo.data());
 	glGenBuffers(1, ebo.data());
@@ -138,7 +190,7 @@ int main(int argc, char *argv[])
 	// Shaders================================================
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	
+
 	std::ifstream t_vert;
 	t_vert.open("src/shaders/vert.glsl");
 	std::stringstream buffer_vert;
@@ -213,7 +265,7 @@ int main(int argc, char *argv[])
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_suf->w, tex_suf->h, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_suf->pixels);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	
+
 	SDL_FreeSurface(tex_suf);
 
 	//main loop=========================================
@@ -241,9 +293,9 @@ int main(int argc, char *argv[])
 		}
 
 		glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(program);
+		
 		GLfloat time_sec = SDL_GetTicks() / 1000.0;
 		GLint tint_color_location = glGetUniformLocation(program, "tintColor");
 		if(tint_color_location == -1)
@@ -254,23 +306,42 @@ int main(int argc, char *argv[])
 		GLfloat b = sin(time_sec) / 2.0f + 0.5f;
 		glUniform4f(tint_color_location, b, b, b, 1.0);
 
-		//Transformation
+		//Transformation==========================================
 		glm::mat4 transform{glm::mat4(1.0)};
 		transform = glm::scale(transform, glm::vec3(0.5, 0.5, 0.5));
 		transform = glm::rotate(transform, glm::radians(90.0f * time_sec), glm::vec3(0, 0, 1.0));
 		transform = glm::translate(transform, glm::vec3(1, 0, 0));
-		GLint transform_location = glGetUniformLocation(program, "transform");
-		if(tint_color_location == -1)
-		{
-			BLIMP_ERROR("Could not find uniform attribute: {}!", "transform");
-			return EXIT_FAILURE;
-		}
-		glUniformMatrix4fv(transform_location, 1, GL_FALSE, glm::value_ptr(transform[0]));
-
-		glBindVertexArray(vao[0]);
+		//GLint transform_location = glGetUniformLocation(program, "transform");
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textures[0]);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		for(int i = 0; i < cube_positions.size(); i++)
+		{
+			glBindVertexArray(vao[0]);
+			glUseProgram(program);
+			
+			glBindTexture(GL_TEXTURE_2D, textures[0]);
+
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cube_positions[i]);
+			float angle = 20.0f * i; 
+  			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
+			glm::mat4 view = glm::mat4(1.0f);
+			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+			glm::mat4 projection;
+			projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+
+			glm::mat4 mvp = projection * view * model;
+			GLint mvp_location = glGetUniformLocation(program, "mvp");
+			glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		}	
+		
+		//glUniformMatrix4fv(transform_location, 1, GL_FALSE, glm::value_ptr(transform[0]))
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 		glBindVertexArray(0);
 

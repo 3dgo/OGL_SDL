@@ -15,7 +15,6 @@ find_package(GLEW REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-
 # Add source to this project's executable.
 add_executable(OGL_SDL src/main.cpp src/core/common_include.h src/core/singleton.h src/systems/system.h src/systems/log.h)
 target_link_libraries(OGL_SDL PRIVATE ${OPENGL_LIBRARY})
