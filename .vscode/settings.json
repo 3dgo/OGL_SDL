@@ -63,5 +63,9 @@
         "xtr1common": "cpp",
         "xutility": "cpp",
         "string_view": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "xrel",
+        "yrel"
+    ]
 }

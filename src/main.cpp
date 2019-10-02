@@ -1,3 +1,4 @@
+#include <math.h>
 #include "core/common_include.h"
 
 #include <fstream>
@@ -8,6 +9,7 @@
 #include <SDL.h>
 #include <SDL2/SDL_image.h>
 #include <GL/glew.h>
+
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -58,7 +60,7 @@ std::array<std::array<GLfloat, 9>, 36> vertices{
 };
 
 std::array<glm::vec3, 10> cube_positions = {
-  glm::vec3( 0.0f,  0.0f,  0.0f), 
+  glm::vec3( 0.0f,  10.0f,  0.0f), 
   glm::vec3( 2.0f,  5.0f, -15.0f), 
   glm::vec3(-1.5f, -2.2f, -2.5f),  
   glm::vec3(-3.8f, -2.0f, -12.3f),  
@@ -125,7 +127,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	SDL_Window *const window{SDL_CreateWindow("Main Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 512, 512, SDL_WINDOW_OPENGL)};
+	SDL_Window *const window{SDL_CreateWindow("Main Window", 0, 0, 1024, 1024, SDL_WINDOW_OPENGL)};
 	if (!window)
 	{
 		BLIMP_ERROR("Failed to create SDL window! Error:{}", SDL_GetError());
@@ -163,6 +165,8 @@ int main(int argc, char *argv[])
 	const GLuint TEXCOORD_BUFFER_INDEX = 2;
 
 	glEnable(GL_DEPTH_TEST);
+
+	SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	// Buffers===============================================
 	glGenBuffers(1, vbo.data());
@@ -268,17 +272,34 @@ int main(int argc, char *argv[])
 
 	SDL_FreeSurface(tex_suf);
 
+	
+	glm::vec3 cam_pos(0.0);
+	float cam_pitch = 0;
+	float cam_yaw = 0;
+
 	//main loop=========================================
 	bool loop = true;
 
 	while (loop)
 	{
+		glm::vec3 cam_fwd(-sin(glm::radians(cam_yaw)) * cos(glm::radians(cam_pitch)),
+						  sin(glm::radians(cam_pitch)),
+						  -cos(glm::radians(cam_yaw)) * cos(glm::radians(cam_pitch)));
+		cam_fwd = glm::normalize(cam_fwd);
+		glm::vec3 cam_rt(glm::cross(cam_fwd, glm::vec3(0, 1, 0)));
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
 			{
 				loop = false;
+			}
+
+			if (event.type == SDL_MOUSEMOTION)
+			{
+				cam_pitch -= event.motion.yrel * 0.1f;
+				cam_yaw -= event.motion.xrel * 0.1f;
 			}
 
 			if (event.type == SDL_KEYDOWN)
@@ -288,9 +309,29 @@ int main(int argc, char *argv[])
 				case SDLK_ESCAPE:
 					loop = false;
 					break;
+				case SDLK_w:
+					cam_pos += cam_fwd;
+					break;
+				case SDLK_s:
+					cam_pos -= cam_fwd;
+					break;
+				case SDLK_a:
+					cam_pos -= cam_rt;
+					break;
+				case SDLK_d:
+					cam_pos += cam_rt;
+					break;
 				}
 			}
+
 		}
+		BLIMP_LOG("{}, {}, {}", cam_fwd.x, cam_fwd.y, cam_fwd.z);
+		glm::mat4 cam_trans(1.0);
+		cam_trans = glm::translate(cam_trans, cam_pos);
+		cam_trans = glm::rotate(cam_trans, glm::radians(cam_yaw), glm::vec3(0, 1, 0));
+		cam_trans = glm::rotate(cam_trans, glm::radians(cam_pitch), glm::vec3(1, 0, 0));
+		cam_trans = glm::inverse(cam_trans);
+		
 
 		glClearColor(0.4f, 0.2f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -327,7 +368,7 @@ int main(int argc, char *argv[])
   			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
 			glm::mat4 view = glm::mat4(1.0f);
-			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+			view = cam_trans;//glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
 			glm::mat4 projection;
 			projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
